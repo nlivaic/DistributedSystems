@@ -2,14 +2,14 @@
 
 ## 8 fallacies of distributed systems
   * [here](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing)
-  * The network is reliable;
+  * The network is reliable - make sure your code is resillient to network failure.
   * Latency is zero;
   * Bandwidth is infinite;
   * The network is secure;
-  * Topology doesn't change;
-  * There is one administrator;
-  * Transport cost is zero;
-  * The network is homogeneous
+  * Topology doesn't change - single database is an example of this. Be prepared for database failovers and/or distributed databases.
+  * There is one administrator
+  * Transport cost is zero
+  * The network is homogeneous - happens when the system is designed so two different applications need to be deployed at the same time. Take care of versioning to mitigate this.
 
 ## Properties we want in a distributed systems:
   * Idempotence
