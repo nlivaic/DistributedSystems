@@ -2,6 +2,14 @@
 
 ## 8 fallacies of distributed systems
   * [here](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing)
+  * The network is reliable;
+  * Latency is zero;
+  * Bandwidth is infinite;
+  * The network is secure;
+  * Topology doesn't change;
+  * There is one administrator;
+  * Transport cost is zero;
+  * The network is homogeneous
 
 ## Properties we want in a distributed systems:
   * Idempotence
