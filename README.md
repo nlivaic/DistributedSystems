@@ -33,7 +33,7 @@
   * Promotes eventual consistency
 * Immutability changes everything [here](https://vimeo.com/52831373)
 * Facilitated by:
-  * Snapshot pattern - allows for detecting concurrent writes by comparing the incoming tick count with the last stored tick count. Important thing to note here is the concurrency boundary begins when the data is read. More on my discussion with Michael Perry in the bottom of this article [here](Discussion-with-Michael-Perry-on-snapshot-pattern-and-concurrency-checks).
+  * Snapshot pattern - allows for detecting concurrent writes by comparing the incoming tick count with the last stored tick count. Important thing to note here is the concurrency boundary begins when the data is read. More on my discussion with Michael Perry in the bottom of this article [here](#Discussion-with-Michael-Perry-on-snapshot-pattern-and-concurrency-checks).
   * Tombstone pattern
 
 ### Location indepence
