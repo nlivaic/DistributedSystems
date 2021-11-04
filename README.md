@@ -33,7 +33,7 @@
   * Promotes eventual consistency
 * Immutability changes everything [here](https://vimeo.com/52831373)
 * Facilitated by:
-  * Snapshot pattern - allows for detecting concurrent writes and prevents overwrites.
+  * Snapshot pattern - allows for detecting concurrent writes by comparing the incoming tick count with the last stored tick count. Important thing to note here is the concurrency boundary begins when the data is read. More on my discussion with Michael Perry in the bottom of this article [here](Discussion-with-Michael-Perry-on-snapshot-pattern-and-concurrency-checks).
   * Tombstone pattern
 
 ### Location indepence
@@ -51,3 +51,7 @@
 ### Open points
 * Why are we hiding Id from clients?
 * Benefits of immutable data?
+
+## Discussion with Michael Perry on snapshot pattern and concurrency checks
+
+![image](https://user-images.githubusercontent.com/26722936/140316543-f75669ff-62ad-41a0-9c6c-2cd912918aa2.png)
