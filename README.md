@@ -22,7 +22,7 @@
 * Networks are not reliable. If you don't get back a successful reply, you cannot discern between the server not getting the message, an error on the server and server executing successfully but the response somehow getting lost.
 * Our system must be prepared to detect a duplicate write and ignore it.
 * We do this by generating a client-side generated id and then POSTing (and PUTing, but PUT is idempotent as it is) against that identifier. Guid is a good choice for this. This will act as an alternate key in the database.
-* In the course [Fundamentals of Distributed Systems]() Michael Perry also talks about not returning the Id back to the client. Not sure what that is about. An implication of this is that the client will use the client Id to query the resource and this decision then permeates the interfaces found throughtout the application layers.
+* In the course [Fundamentals of Distributed Systems](https://app.pluralsight.com/course-player?clipId=d4145cd4-2477-4a20-ae65-af9476ef06fc) Michael Perry also talks about not returning the Id back to the client. Not sure what that is about. An implication of this is that the client will use the client Id to query the resource and this decision then permeates the interfaces found throughout the application layers.
 
 ### Immutability
 
@@ -36,7 +36,7 @@
   * Snapshot pattern - allows for detecting concurrent writes by comparing the incoming tick count with the last stored tick count. Important thing to note here is the concurrency boundary begins when the data is read. More on my discussion with Michael Perry in the bottom of this article [here](#Discussion-with-Michael-Perry-on-snapshot-pattern-and-concurrency-checks).
   * Tombstone pattern
 
-### Location indepence
+### Location independence
 * Location dependent identifiers like auto-incrementing Ids are an anti-pattern in distributed systems: One record cannot be moved from one database to another because the id might be taken by another record.
 * Location independent identifiers:
   * Alternate Key
@@ -47,6 +47,15 @@
     * Naturally verifiable: if the hash you calculate does not match the hash of the object you just received, it has been tampered with.
     * Naturally idempotent: if the hash of the object you hold is the same as the hash of the object you want to replace, no need to replace it.
     * Solves cache invalidation: if the cache contains an object with a given hash, you know it's up to date. More [here](https://app.pluralsight.com/course-player?clipId=26c73001-f898-4ea0-a6aa-2cc41fe14185).
+
+### Versioning
+
+* One of the fallacies of distributed computing says "Network is homogenous". What this means is that we erroneously might believe all the nodes out there are of the same version (e.g. all instances some specific service are of the same version). This is not true if we want to have things like rolling deploys and backwards compatibility.
+* Versioning can be achieved through several approaches:
+  * HTTP headers: `Version: v1`
+  * Query string: `?version=v1`, but this kind of defeats the purpose of query string
+  * Route: `/v1`
+  * Additive versioning: different versions of the API work with different versions of the payload. Newer versions simply know how to read additional properties in the payload.
 
 ### Open points
 * Why are we hiding Id from clients?
