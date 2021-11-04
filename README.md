@@ -51,6 +51,7 @@
 ### Versioning
 
 * One of the fallacies of distributed computing says "Network is homogenous". What this means is that we erroneously might believe all the nodes out there are of the same version (e.g. all instances some specific service are of the same version). This is not true if we want to have things like rolling deploys and backwards compatibility.
+* Versioning plays into this by allowing us to maintain contracts across different versions of applications across different locations and different times these are deployed.
 * Versioning can be achieved through several approaches:
   * HTTP headers: `Version: v1`
   * Query string: `?version=v1`, but this kind of defeats the purpose of query string
