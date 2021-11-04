@@ -35,6 +35,7 @@
 * Facilitated by:
   * Snapshot pattern - allows for detecting concurrent writes by comparing the incoming tick count with the last stored tick count. Important thing to note here is the concurrency boundary begins when the data is read. More on my discussion with Michael Perry in the bottom of this article [here](#Discussion-with-Michael-Perry-on-snapshot-pattern-and-concurrency-checks).
   * Tombstone pattern
+* New versions of database (e.g. new columns) - favour creating new tables as opposed to just adding new columns. By just adding new columns we have to make them nullable or provide a default value to accomodate existing records - this sends a message that all records have this default value (which is probably not true) or that the columns is optional. By creating a new table we are sending a clear message - data is optional. Of course if the new columns are not optional, consider including them in the existing tables, but think about how that relates to the nature of having immutable records.
 
 ### Location independence
 * Location dependent identifiers like auto-incrementing Ids are an anti-pattern in distributed systems: One record cannot be moved from one database to another because the id might be taken by another record.
