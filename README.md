@@ -95,13 +95,15 @@
 #### Events
 * Emitted by the system of record to signal an action was performed resulting in change of the system's internal state. As a rule should be expressed in past tense.
 
-### Synchronous Coupling
+### Temporal Coupling
+
+#### Synchronous Coupling
 * HTTP, gRPC, REST, SOAP
 * Allows the delivery to take place and server to validate the incoming payload, do the processing and return the result indicating how the processing went.
 * Commands can be done using a synchronous manner, but then the client and the server are temporaly coupled, which is something we should strive to avoid. Benefits are the client is informed whether the command went through successfully or not.
 * Queries should use synchronous coupling, but in specific cases (e.g. performance) they can be executed using an asynchronous call.
 
-### Asynchronous Coupling
+#### Asynchronous Coupling
 * HTTP (202 Accepted), AMQP, Apache Kafka, Amazon SQS and others
 * Allows the delivery to take place and server to validate the incoming payload. Business invariant cannot be checked, but information can be returned to the client on how top check in later.
 * Commands should be done using an asynchronous communication. Client should be returned a 202 Accepted and the processing should be done in the background as this decouples the client and the server. This does make the system more complicated overall as the client now has to check back to see the result of the processing.
