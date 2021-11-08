@@ -35,10 +35,10 @@
 * Facilitated by:
   * Snapshot pattern - allows for detecting concurrent writes by comparing the incoming tick count with the last stored tick count. Important thing to note here is the concurrency boundary begins when the data is read. More on my discussion with Michael Perry in the bottom of this article [here](#Discussion-with-Michael-Perry-on-snapshot-pattern-and-concurrency-checks).
   * Tombstone pattern
-* New versions of database (e.g. new columns) - favour creating new tables as opposed to just adding new columns. By just adding new columns we have to make them nullable or provide a default value to accomodate existing records - this sends a message that all records have this default value (which is probably not true) or that the columns is optional. By creating a new table we are sending a clear message - data is optional. Of course if the new columns are not optional, consider including them in the existing tables, but think about how that relates to the nature of having immutable records.
 
 ### Location independence
 * Location dependent identifiers like auto-incrementing Ids are an anti-pattern in distributed systems: One record cannot be moved from one database to another because the id might be taken by another record.
+* To maintain location independence you should hide or even not use auto-incrementing IDs.
 * Location independent identifiers:
   * Alternate Key
   * Natural Key
@@ -53,12 +53,23 @@
 
 ### Versioning
 
+#### Code versioning
+
+* Source control management software (Git)
+* CI/CD pipeline and separate components for versioning assemblies
+
+#### Database versioning
+
+* When versioning the database (e.g. new columns) favour creating new tables as opposed to just adding new columns. By just adding new columns we have to make them nullable or provide a default value to accomodate existing records - this sends a message that all records have this default value (which is probably not true) or that the columns is optional. By creating a new table we are sending a clear message - data is optional. Of course if the new columns are not optional, consider including them in the existing tables, but think about how that relates to the nature of having immutable records.
+
+#### API versioning
+
 * One of the fallacies of distributed computing says "Network is homogenous". What this means is that we erroneously might believe all the nodes out there are of the same version (e.g. all instances some specific service are of the same version). This is not true if we want to have things like rolling deploys and backwards compatibility.
 * Versioning plays into this by allowing us to maintain contracts across different versions of applications across different locations and different times these are deployed.
 * Versioning can be achieved through several approaches:
-  * HTTP headers: `Version: v1`
-  * Query string: `?version=v1`, but this kind of defeats the purpose of query string
-  * Route: `/v1`
+  * HTTP headers: `Accept=application/some_resource.v1+json`, `Content-Type=application/some_resource.v1+json`
+  * Query string: `/api/some_resource?version=v1`, but this kind of defeats the purpose of query string
+  * Route: `/api/v1/some_resource`
   * Additive versioning: different versions of the API work with different versions of the payload. Newer versions simply know how to read additional properties in the payload.
 
 ### Open points
@@ -66,6 +77,10 @@
 * Benefits of immutable data?
 * Content Addressed Storage - how does load balancer know where to find `file-123.js` as opposed to `file-456.js`?
 
-## Discussion with Michael Perry on snapshot pattern and concurrency checks
+### Discussion with Michael Perry on snapshot pattern and concurrency checks
 
 ![image](https://user-images.githubusercontent.com/26722936/140316543-f75669ff-62ad-41a0-9c6c-2cd912918aa2.png)
+
+## Connecting Services
+
+* 
