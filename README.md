@@ -83,4 +83,15 @@
 
 ## Connecting Services
 
-* 
+### Synchronous Coupling
+* HTTP, gRPC, REST, SOAP
+* Allows the delivery to take place and server to validate the incoming payload, do the processing and return the result indicating how the processing went.
+
+### Asynchronous Coupling
+* HTTP (202 Accepted), AMQP, Apache Kafka, Amazon SQS and others
+* Allows the delivery to take place and server to validate the incoming payload. Business invariant cannot be checked, but information can be returned to the client on how top check in later.
+
+### Publishing Contract Packages
+
+* For services to communicate asynchronously they need to know which events each of them works with - events form an interface.
+* To stay on top of the interfaces and any changes that might happen to these interfaces a service should publish events it works with (consumes). This is best done by creating a separate project describing the events and make it part of same solution as the consuming service. Publish the contract package to NuGet (private feed) so other services know what the events should like. Use semantic versioning to convey information whether the new interface introduces a breaking change.
