@@ -111,3 +111,13 @@
 
 * For services to communicate asynchronously they need to know which events each of them works with - events form an interface.
 * To stay on top of the interfaces and any changes that might happen to these interfaces a service should publish events it works with (consumes). This is best done by creating a separate project describing the events and make it part of same solution as the consuming service. Publish the contract package to NuGet (private feed) so other services know what the events should like. Use semantic versioning to convey information whether the new interface introduces a breaking change.
+
+### Integrating external Partners
+
+* Use HTTP in an asynchronous manner, returning 202 Accepted. This way you can avoid temporaly coupling with your partner's APIs and you also sidestep a few other issues your partners might have with publishing messages to messaging systems:
+  * Messaging systems tend to be implementation based and not standards based (see list above, they are all products, not standards).
+  * Authentication issues by 3rd parties.
+* By using HTTPs you can also:
+  * Create OpenAPI specification for your partners to consume.
+  * Utilize your platform's API Management tools to issue API keys your partners can use to authenticate.
+  * Create Postman collections and reference implementations for your partners to integrate more easily.
