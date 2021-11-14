@@ -113,6 +113,7 @@
 
 * For services to communicate asynchronously they need to know which events each of them works with - events form an interface.
 * To stay on top of the interfaces and any changes that might happen to these interfaces a service should publish events it works with (consumes). This is best done by creating a separate project describing the events and make it part of same solution as the consuming service. Publish the contract package to NuGet (private feed) so other services know what the events should like. Use semantic versioning to convey information whether the new interface introduces a breaking change.
+* The section below talks about how to keep track of Dtos, but a different approach is suggested there. Since the above approach is suggested by Michael Perry and the approach below by Roland Guijt, I still have to see if the two are in conflict.
 
 #### API Data Transfer Objects
 
