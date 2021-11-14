@@ -114,6 +114,12 @@
 * For services to communicate asynchronously they need to know which events each of them works with - events form an interface.
 * To stay on top of the interfaces and any changes that might happen to these interfaces a service should publish events it works with (consumes). This is best done by creating a separate project describing the events and make it part of same solution as the consuming service. Publish the contract package to NuGet (private feed) so other services know what the events should like. Use semantic versioning to convey information whether the new interface introduces a breaking change.
 
+#### API Data Transfer Objects
+
+* You might be tempted to share Dtos used by microservices, but don't do that. This leads to tight coupling between microservices.
+* Another option is generating Dtos from OpenApi specification. If you are ok with the generated code, it's a viable approach. Updating the Dtos is now done manually.
+* Third option is to simply for each service to have its own copy of Dtos and go with that. Updating the Dtos is now done manually.
+
 ### Integrating external Partners
 
 * Use HTTP in an asynchronous manner, returning 202 Accepted. This way you can avoid temporaly coupling with your partner's APIs and you also sidestep a few other issues your partners might have with publishing messages to messaging systems:
