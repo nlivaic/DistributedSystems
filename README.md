@@ -123,10 +123,15 @@
 
 ### Integrating external Partners
 
-* Use HTTP in an asynchronous manner, returning 202 Accepted. This way you can avoid temporaly coupling with your partner's APIs and you also sidestep a few other issues your partners might have with publishing messages to messaging systems:
-  * Messaging systems tend to be implementation based and not standards based (see list above, they are all products, not standards).
+* This section describes how external clients might integrate with your distributed system.
+* Use HTTP in an asynchronous manner, returning 202 Accepted. This way you can avoid temporaly coupling with your partner's APIs and you also sidestep a few other issues your partners might have with publishing messages to your messaging queue:
+  * Messaging queues tend to be implementation based and not standards based (see list above, they are all products, not standards).
   * Authentication issues by 3rd parties.
 * By using HTTPs you can also:
   * Create OpenAPI specification for your partners to consume.
   * Utilize your platform's API Management tools to issue API keys your partners can use to authenticate.
   * Create Postman collections and reference implementations for your partners to integrate more easily.
+
+## Developing with Microservices
+
+tbd
