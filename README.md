@@ -132,6 +132,14 @@
   * Utilize your platform's API Management tools to issue API keys your partners can use to authenticate.
   * Create Postman collections and reference implementations for your partners to integrate more easily.
 
+## Connecting Microservices
+
+### Commutativity
+
+* It is a real possibility two messages which have been queued in a specific order might be processed out of order. Therefore it is important for our system to be able to process them out of order and yet have the desired result happen.
+* An example is creating a new show for an act and then renaming that act. This was important for Perry's search service. When the act is renamed all shows get the new name. When a new show is created the act name is embedded in the event. If these two events get processed the other way round then first all the acts get renamed and only then the new show will be created, but with the old name. He solved the problem by indexing the act name so any show created afterward can read the newest act name.
+* I think details on how to implement commutativity are very case-specific.
+
 ## Developing with Microservices
 
 tbd
