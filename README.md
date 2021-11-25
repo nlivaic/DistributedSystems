@@ -165,14 +165,22 @@
   3. Retriable transaction - cannot be reverted using compensatable transactions. Must be retried until they finally succeeded.
 * Are ACD (not ACID). Lack of isolation leads to dirty reads until the whole saga is finished. Some steps can be taken to mitigate dirty reads through countermeasures - these are design techniques that make the saga more ACID-like. An example is a Semantic Lock - it is an application level 
 
-### Communication and Coordination
+#### Communication and Coordination
 
-#### Event Sourcing
+* Most resilient communication pattern is sending messages between services. An issue with this approach is: what if, after we finish the database transaction locally, we cannot contact the messaging queue?
+* Approaches below have in common saving the event locally and then having it read from the store and sent to the remote service.
+
+##### Event Sourcing
 
 * [Event sourcing database](https://www.eventsource.com)
 
-#### Transactional Outbox pattern
+##### Transactional Outbox pattern
 
-## Developing with Microservices
+* Insert into an `Outbox` table as part of your transaction. A separate process reads from the database and sends it to the remote service.
+* Reading from the database can be done by utilizing transaction log tailing (reading from the transaction log through database-specific APIs). This approach is very database specific. It is most efficient of Transactional Outbox pattern approaches.
+* Another way to read the database for new events is to poll the `Outbox` table. This approach is universal because it does not depend on any database-specific APIs, but there is the question of how frequently we want to poll the database to not overtax it too much.
 
-tbd
+#### Saga influences API design
+
+* When do we send the response back to the caller?
+  * Send response after the saga finishes - keeps the API unchanged, but introduces runtime coupling because the caller must wait on the saga to finish?
