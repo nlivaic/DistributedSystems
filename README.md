@@ -147,6 +147,7 @@
 * Team separation
 * Easy to expand
 * Reliable
+* Different technologies: languages, types of interfaces (REST, gRPC)
 
 ## Developing with Microservices
 
