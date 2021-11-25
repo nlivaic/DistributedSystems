@@ -105,8 +105,8 @@
 
 #### Asynchronous Coupling
 * HTTP (202 Accepted), AMQP, Apache Kafka, Amazon SQS and others
-* Allows the delivery to take place and server to validate the incoming payload. Business invariant cannot be checked, but information can be returned to the client on how top check in later.
-* Commands should be done using an asynchronous communication. Client should be returned a 202 Accepted and the processing should be done in the background as this decouples the client and the server. This does make the system more complicated overall as the client now has to check back to see the result of the processing.
+* Allows the delivery to take place and server to validate the incoming payload. Business invariant cannot be checked, but information can be returned to the client on how to check in later.
+* Commands should be done using an asynchronous communication. Client should be returned a 202 Accepted and the processing should be done in the background as this decouples the client from the server. This does make the system more complicated overall as the client now has to check back to see the result of the processing.
 * Events should be done asynchronously because the system of record is publishing these to let others know it has finished an action - it is not interested in who picks up the message and therefore decoupling is paramount.
 
 ### Publishing Contract Packages
@@ -120,6 +120,11 @@
 * You might be tempted to share Dtos used by microservices, but don't do that. This leads to tight coupling between microservices.
 * Another option is generating Dtos from OpenApi specification. If you are ok with the generated code, it's a viable approach. Updating the Dtos is now done manually.
 * Third option is to simply for each service to have its own copy of Dtos and go with that. Updating the Dtos is now done manually.
+
+#### Generating Data Transfer Objects
+
+* This approach utilizes OpenApi specification and tooling to generate Dtos. If you are ok with the generated classes and they way they look like, this is an ok approach.
+* Otherwise, you might have to resort to manually creating the Dtos as per the specification - there are tools online for this as well, so you just c/p resulting classes.
 
 ### Integrating external Partners
 
