@@ -163,7 +163,7 @@
   1. Compensatable transactions - these can be reverted by applying transactions that cancel out original transactions.
   2. Single pivot transaction - last compensatable transaction which can still possibly fail. If it fails compensatable transactions must be reverted.
   3. Retriable transaction - cannot be reverted using compensatable transactions. Must be retried until they finally succeeded.
-* Are ACD (not ACID). Lack of isolation leads to dirty reads until the whole saga is finished. Some steps can be taken to mitigate dirty reads through countermeasures - these are design techniques that make the saga more ACID-like. An example is a Semantic Lock - it is an application level 
+* Are ACD (not ACID). Lack of isolation leads to dirty reads until the whole saga is finished. Some steps can be taken to mitigate dirty reads through countermeasures - these are design techniques that make the saga more ACID-like. An example is a Semantic Lock - it is an application level lock saying don't read or update this object (i.e. it is a new column or property on a database row or object).
 
 #### Communication and Coordination
 
