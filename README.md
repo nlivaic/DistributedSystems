@@ -154,6 +154,11 @@
 * Reliable
 * Different technologies: languages, types of interfaces (REST, gRPC)
 
+## Tracing
+
+* Every incoming HTTP request should get the web framework to generate an identifier. ASP.NET Core implements the HTTP Trace Context standard.
+* TBD 
+
 ## Data Patterns
 
 ### Saga
@@ -182,5 +187,15 @@
 
 #### Saga influences API design
 
-* When do we send the response back to the caller?
-  * Send response after the saga finishes - keeps the API unchanged, but introduces runtime coupling because the caller must wait on the saga to finish?
+* Sagas are initiated using a POST request to an API. The question is: when do we send the response back to the caller?
+* Several options exists:
+  1. Send response after the saga finishes:
+    * Keeps the API unchanged, but introduces runtime coupling because the caller must wait on the saga to finish.
+    * All saga participants must be online. This reduces availability of the whole system.
+  2. Send response immediately after starting the saga:
+    * Recommended approach.
+    * Higher availability as there is no runtime coupling.
+    * API will need to be changed since the response does not specify the result of the operation. 
+    * Client will have to poll the system for result or be notified some other way (push notifications?).
+
+
