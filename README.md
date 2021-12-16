@@ -171,6 +171,8 @@
 ### Communication and Coordination
 
 * Respective services need to communicate with one another to pass commands and queries. Having one service call another synchronously (over HTTP) makes for brittle communication - availability suffers because if one services in the chain goes down or timeouts, entire operation fails.
+* Return a response from the API to the client before Saga finishes. Let them know how to fetch more data on how the Saga is progressing.
+* Coordination options (choreography and orchestration) are described below.
 * Most resilient communication pattern is sending messages between services. An issue with this approach is: what if, after we finish the database transaction locally, we cannot contact the messaging queue?
 * Approaches below have in common saving the event locally and then having it read from the store and sent to the remote service.
 
@@ -199,5 +201,15 @@
     * API will need to be changed since the response does not specify the result of the operation. 
     * Client will have to poll the system for result or be notified some other way (push notifications?).
 
-### 
+### Choreography
 
+* Event driven - coordination logic is distributed among participants.
+* Participants publish event and consumers react. Lacks a centralized place where the logic is stored - hard to reason about (in complex sagas), but simple to implement.
+* Relies on events:
+  * Typically DDD domain events.
+  * A change to DDD aggregate. Inidicated something that happened and that is of interest to domain experts.
+  * Recommended approach on what to store in an event says to store everything the consumer needs:
+    * It's more self-sufficient and does not require callbacks from consuming services.
+    * Does introduce design-time coupling as both producing and consuming service need to coordinate, thus providing less stability.
+    * Removes the inconsistency risk - if we were to send only an entity identifier in the event there would be a chance the entity changed in the period between the consuming service receiving the event and issuing a callback to the producing service.
+  * Another approach on what to store in an event is just the minimal - entity identifier. This requires the consumer to call the oiginating service, thus introducing runtime coupling. There is a risk of inconsistenncy: original data may have changed since the event was published.
