@@ -213,3 +213,11 @@
     * Does introduce design-time coupling as both producing and consuming service need to coordinate, thus providing less stability.
     * Removes the inconsistency risk - if we were to send only an entity identifier in the event there would be a chance the entity changed in the period between the consuming service receiving the event and issuing a callback to the producing service.
   * Another approach on what to store in an event is just the minimal - entity identifier. This requires the consumer to call the oiginating service, thus introducing runtime coupling. There is a risk of inconsistenncy: original data may have changed since the event was published.
+* Utilizes a pub-sub principle with potentially many subscribed consumers. The producing service doesn't know which services are listening for events.
+
+### Orchestration
+
+* Saga orchestrator is a dedicated class (e.g. `CreateOrderSaga`) that calls participating services in turn. It uses asynchronous request-response via message broker. Saga orchestrator is a **persisted** object that implements a state machine and invokes the participants. Gets stored in the database waiting for the response to come in. Once a reply comes in it gets retrieved from persistence store and continues executed: calls next participant, updates its own internal state, persists its own internal state and waits for the next reply to come in.
+* The saga orchestrator object gets created by the service itself.
+* Due to it being a state machine you will probably need an orchestration framework of some sort.
+* Utilizes point-to-point communication channel where the message and the channel are owned by the consuming service.
