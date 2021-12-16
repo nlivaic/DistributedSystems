@@ -157,7 +157,6 @@
 ## Tracing
 
 * Every incoming HTTP request should get the web framework to generate an identifier. ASP.NET Core implements the HTTP Trace Context standard.
-* TBD 
 
 ## Saga
 
@@ -171,6 +170,7 @@
 ### Communication and Coordination
 
 * Respective services need to communicate with one another to pass commands and queries. Having one service call another synchronously (over HTTP) makes for brittle communication - availability suffers because if one services in the chain goes down or timeouts, entire operation fails.
+* The solution to above problem is to use a message broker with at-least-once delivery. This way a saga will work even if participants are down. Another interesting property a message broker should have is ordered delivery - this way we can scale consumers and preserve ordering.
 * Return a response from the API to the client before Saga finishes. Let them know how to fetch more data on how the Saga is progressing.
 * Coordination options (choreography and orchestration) are described below.
 * Most resilient communication pattern is sending messages between services. An issue with this approach is: what if, after we finish the database transaction locally, we cannot contact the messaging queue?
