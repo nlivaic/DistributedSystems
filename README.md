@@ -221,3 +221,10 @@
 * The saga orchestrator object gets created by the service itself.
 * Due to it being a state machine you will probably need an orchestration framework of some sort.
 * Utilizes point-to-point communication channel where the message and the channel are owned by the consuming service.
+
+## Cross-cutting concerts
+
+### Health Checks
+
+* Check all dependencies of the project: message broker, database, etc...
+* You can also check downstream APIs and services whether they are healthy. However, this is appropriate only for the most critical services. In such cases, if downstream services are not healthy, it's best to mark your service's readiness status as `Degraded` instead of `Unhealthy`. For most situations, though, it is best not to couple your services health status to downstream services, but rather let the orchestrator handle such situations through monitoring and health checks of those downstream services.
