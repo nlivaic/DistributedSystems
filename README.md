@@ -11,7 +11,7 @@
   * Transport cost is zero
   * The network is homogeneous - happens when the system is designed so two different applications need to be deployed at the same time. Take care of versioning to mitigate this.
 
-## Properties we want in a distributed systems:
+## Properties of reliable systems:
   * Idempotence
   * Immutability
   * Location independence
