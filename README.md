@@ -16,6 +16,7 @@
   * Immutability
   * Location independence
   * Versioning
+  * These properties are discussed in detail below. The reason for these properties is they work around the fallacies we highlighted above (the network is reliable, toppology doesn't change and the network is homogeneous).
 
 ### Idempotence
 
