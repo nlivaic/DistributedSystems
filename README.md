@@ -35,7 +35,7 @@
 * Immutability changes everything [here](https://vimeo.com/52831373)
 * Facilitated by:
   * Snapshot pattern - a separate snapshot table keeping each change, thus simulating updates. Besides keeping the data it also allows for detecting concurrent writes by comparing the incoming tick number with the last stored tick number. The caller must provide the exact same tick number otherwise they are working with an out-of-date version. Important thing to note here is the concurrency boundary begins when the data is read. More on my discussion with Michael Perry in the bottom of this article [here](#Discussion-with-Michael-Perry-on-snapshot-pattern-and-concurrency-checks).
-  * Deletes are facilitated by Tombstone pattern
+  * Tombstone pattern is used to simulate deletes.
 
 ### Location independence
 * Location dependent identifiers like auto-incrementing Ids are an anti-pattern in distributed systems: One record cannot be moved from one database to another because the id might be taken by another record.
