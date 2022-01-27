@@ -29,12 +29,12 @@
 * Never change the entity, but rather add a new record. Benefits:
   * We have a natural audit log
   * Nothing gets destroyed
-  * We preserve what data each node received ("metadata)
-  * Promotes eventual consistency
+  * We preserve what data each node received ("metadata")
+  * Promotes eventual consistency (not sure how immutability relates to this one?)
 * Immutability changes everything [here](https://vimeo.com/52831373)
 * Facilitated by:
-  * Snapshot pattern - allows for detecting concurrent writes by comparing the incoming tick count with the last stored tick count. Important thing to note here is the concurrency boundary begins when the data is read. More on my discussion with Michael Perry in the bottom of this article [here](#Discussion-with-Michael-Perry-on-snapshot-pattern-and-concurrency-checks).
-  * Tombstone pattern
+  * Snapshot pattern - a separate snapshot table keeping each change, thus simulating updates. Besides keeping the data it also allows for detecting concurrent writes by comparing the incoming tick number with the last stored tick number. The caller must provide the exact same tick number otherwise they are working with an out-of-date version. Important thing to note here is the concurrency boundary begins when the data is read. More on my discussion with Michael Perry in the bottom of this article [here](#Discussion-with-Michael-Perry-on-snapshot-pattern-and-concurrency-checks).
+  * Deletes are facilitated by Tombstone pattern
 
 ### Location independence
 * Location dependent identifiers like auto-incrementing Ids are an anti-pattern in distributed systems: One record cannot be moved from one database to another because the id might be taken by another record.
@@ -43,7 +43,7 @@
   * Alternate Key
   * Natural Key
   * Public Key
-  * Hash - a.k.a. Content Addressed Storage, using the content to identify itself. 
+  * Hash - a.k.a. Content Addressed Storage, using the content to identify itself. This value is the same irrelevant of which node does the calculation.
     * One use is to do cache busting for client-side cached components (e.g. JS files). However, if caching is done based on query string (`file.js?v=123`), then this does not play well with rolling deployments where we might have multiple versions of `file.js` deployed - request for `file.js?v=456` will bust the local cache, but the load balancer will still forward the request to one of the deployed versions of the application and it might not necessarily be the one where `file.js?v=456` is stored, thus potentially retrieving an older version (`file.js?v=123`) and causing the browser to store the wrong version as `file.js?v=456`. If we name our resources according to the hash derived from the resource (`file-123.js`) than cache busting will work with multiple versions deployed.
     * Advantages:
       * Naturally immutable: if the hash is different, it's a different object.
