@@ -64,13 +64,14 @@
 
 #### API versioning
 
-* One of the fallacies of distributed computing says "Network is homogenous". What this means is that we erroneously might believe all the nodes out there are of the same version (e.g. all instances some specific service are of the same version). This is not true if we want to have things like rolling deploys and backwards compatibility.
+* One of the fallacies of distributed computing says "Network is homogenous". What this means is that we erroneously might believe all the nodes out there are of the same version (e.g. all instances of some specific service are of the same version). This is not true if we want to have things like rolling deploys and backwards compatibility.
 * Versioning plays into this by allowing us to maintain contracts across different versions of applications across different locations and different times these are deployed.
 * Versioning can be achieved through several approaches:
   * HTTP headers: `Accept=application/some_resource.v1+json`, `Content-Type=application/some_resource.v1+json`
   * Query string: `/api/some_resource?version=v1`, but this kind of defeats the purpose of query string
   * Route: `/api/v1/some_resource`
   * Additive versioning: different versions of the API work with different versions of the payload. Newer versions simply know how to read additional properties in the payload.
+  * Or you can avoid it altogether by using GraphQL, allowing the clients to shape their own responses.
 
 ### Open points
 * Why are we hiding Id from clients?
