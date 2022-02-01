@@ -3,9 +3,9 @@
 ## 8 fallacies of distributed systems
   * [here](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing)
   * The network is reliable - make sure your code is resillient to network failure.
-  * Latency is zero;
-  * Bandwidth is infinite;
-  * The network is secure;
+  * Latency is zero
+  * Bandwidth is infinite
+  * The network is secure
   * Topology doesn't change - single database is an example of this. Be prepared for database failovers and/or distributed databases.
   * There is one administrator
   * Transport cost is zero
