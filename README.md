@@ -285,3 +285,15 @@
   * Queues
   * Consumers
 * Periodically take a baseline of the above metrics and record that in the runbook. Use it to detect anomalies.
+* Monitoring and dashboard tools available: Prometheus, Grafana, Kibana.
+
+#### Dead Letter Queues
+
+* A strategy is needed for handling messages in DLQ:
+  * Alert: at a minimum, an alert is needed whenever anything ends up in DLQ.
+  * Locate: a message ending in the DLQ is usually a sign of a problem somewhere else, like a consumer failing to properly process a message. The source of the problem will have to be located by the ops team by figuring out where the message came from - looking at the application dependency map in the runbook is the best way to go about it.
+  * Diagnose: why did the service fail to process the message right now? Is something wrong with the message? Has the service been updated recently? Does a service's dependency cause issues (availability, processing error)?
+  * Correct
+  * Restore: bring the message back into the appropriate queue/topic.
+  * Monitor: monitor the handler to make sure the message is processed after the fix.
+  * Document: write down the findings in the runbook if they are not noted already.
