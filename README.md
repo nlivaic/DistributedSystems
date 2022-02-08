@@ -237,6 +237,7 @@
 ### Runbook
 
 * Maintain a runbook of your system. It should contain information of value to operators, DBAs, developers, testers.
+* It is a living document about how your system looks like and how to run in.
 * Describe different aspects of your system: databases, application dependency map, how to mitigate known problems, maintain queue metrics
 
 #### Application databases
@@ -248,8 +249,39 @@
 
 #### Application dependency map
 
-* List externally visible applications. Essentially, these are any web or mobile applications your end users will use. Do not let the work "externally" fool you, it should also include applications used internally by your organization.
-* Then list any internal APIs the above applications dependend on.
-* Describe how these application are hosted, machines, OS, machine names etc...
-* What does the configuration look like? Where is the configuration? How to change it? How does one machine find another: is there a discovery service or are machine IPs configured statically?
-* Describe how the message broker works, what the topics and queues are named, who is expected to subsribe to each.
+* Create a diagram of externally visible applications. Essentially, these are any web or mobile applications your end users will use. Do not let the work "externally" fool you, it should also include applications used internally by your organization.
+* Create a diagram any internal APIs the above applications dependend on. Who depends on whom?
+* Describe how these application are hosted, machines, ports, OS, machine names etc...
+* How are the applications and APIs configured? Where is the configuration: environment variables or a configuration service? How to change it? How does one machine find another: is there a discovery service or are machine IPs configured statically?
+* Describe how the message brokers work, what the topics and queues are named, who is expected to subsribe to each.
+* When creating the diagram, show each node:
+ * Is it publically accessible?
+ * What URL is it reachable on?
+ * What port?
+ * Which message broker and queue/topic does it use? What does it listen to?
+ * Which other node does it depend on?
+
+#### Problems and mitigations
+
+* Problems in production will arise as time goes by. Log them here as they show up and describe how it was solved.
+* Is the problem a technical debt? Log it as such.
+* Some issues might require a cross-functional research team: network people, DBAs, developers, ops.
+
+#### Queue metrics
+
+* Each broker has different way metrics are measured. Describe the most important metrics relevant to your broker. Reading the metrics correctly will tell you if there is a problem or if you need to do scaling up or down.
+* Message delivery - number of messages in each stage of delivery:
+ * Number of ready messages: should be close to 0. If it starts to go up, it means there is a bottleneck downstream.
+ * Number of unacknowledged messages: should be close to 0. If it starts to go up, it means the consumer it taking a long time to process each message. It might also mean the message is failing to get processed and the consumer is in an exponential backoff.
+ * Number of delivered messages: should increase over time. Indicated a total throughput of the system.
+* Brokers run on nodes, just like any other service. Node health should be monitored as well:
+  * CPU
+  * Memory
+  * Storage
+  * Sockets
+* Nodes are in cluster, allowing the system to achieve availability and scalability. Clusted usage should be monitored as well:
+  * Connections
+  * Channels
+  * Queues
+  * Consumers
+* Periodically take a baseline of the above metrics and record that in the runbook. Use it to detect anomalies.
