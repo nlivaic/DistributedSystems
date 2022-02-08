@@ -231,3 +231,25 @@
 * Check all dependencies of the project: message broker, database, etc...
 * You can also check downstream APIs and services whether they are healthy (check out the package `AspNetCore.HealthChecks.Uris`. However, this approach is risky because it opens you up to cascading failures. It is appropriate only for the most critical services. In such cases, if downstream services are not healthy, it's best to mark your service's readiness status as `Degraded` instead of `Unhealthy`. For most situations, though, it is best not to couple your services health status to downstream services, but rather let the orchestrator handle such situations through monitoring and health checks of those downstream services.
 * A good thing to test is whether message broker's topics and queues are reachable. You can even mark the service as `Unhealthy` if the broker is not reachable.
+
+## Documenting distributed systems
+
+### Runbook
+
+* Maintain a runbook of your system. It should contain information of value to operators, DBAs, developers, testers.
+* Describe different aspects of your system: databases, application dependency map, how to mitigate known problems, maintain queue metrics
+
+#### Application databases
+
+* Describe the ERD in a general sense (do not include each column for brevity).
+* Describe which tables are expected to grow.
+* List long running queries.
+* In general, whatever DBA might need so as not to fly blind.
+
+#### Application dependency map
+
+* List externally visible applications. Essentially, these are any web or mobile applications your end users will use. Do not let the work "externally" fool you, it should also include applications used internally by your organization.
+* Then list any internal APIs the above applications dependend on.
+* Describe how these application are hosted, machines, OS, machine names etc...
+* What does the configuration look like? Where is the configuration? How to change it? How does one machine find another: is there a discovery service or are machine IPs configured statically?
+* Describe how the message broker works, what the topics and queues are named, who is expected to subsribe to each.
