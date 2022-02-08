@@ -234,11 +234,27 @@
 
 ## Documenting distributed systems
 
+### Good engineering practices
+
+* The practices mentioned here are elaborated in the next section. They are here to provide overview in one place.
+* Runbook - make it part of your development culture to write stuff to runbook:
+  * Write to runbook as you develop code.
+  * Regularly verify the runbook with you QA team.
+  * Updated with each new release.
+* Queues - ops team should maintain good practices:
+  * Have a monitoring dashboard to keep an eye on metrics.
+  * Periodically take a baseline of the above metrics and record that in the runbook. Use it to detect anomalies.
+  * Have a ticketing system so messages in DLQ can be quickly resolved.
+* Logging and tracing:
+  * Standards should be specified in the runbook - what is logged, how is it logged and how is correlated tracing done.
+  * Logging code should be a target of code reviews, to make sure useful stuff gets logged.
+  * Document a query (in the runbook) allowing the ops and QA teams to find logs they need in the logging management system. Developers should work with QA on these queries to make sure the queries provide valuable results.
+
 ### Runbook
 
 * Maintain a runbook of your system. It should contain information of value to operators, DBAs, developers, testers.
 * It is a living document about how your system looks like and how to run in.
-* Describe different aspects of your system: databases, application dependency map, how to mitigate known problems, maintain queue metrics
+* Describe different aspects of your system: databases, application dependency map, how to mitigate known problems, maintain queue metrics.
 
 #### Application databases
 
@@ -284,8 +300,8 @@
   * Channels
   * Queues
   * Consumers
-* Periodically take a baseline of the above metrics and record that in the runbook. Use it to detect anomalies.
 * Monitoring and dashboard tools available: Prometheus, Grafana, Kibana.
+* Periodically take a baseline of the above metrics and record that in the runbook. Use it to detect anomalies.
 
 #### Dead Letter Queues
 
@@ -301,6 +317,7 @@
 #### Logging
 
 * When logging an exception, log as much context as you can. Have the operations in mind - they will read the log entry and try to rebound from the error.
+* Write logging practices in the runbook and make sure any code relating to logging is code reviewed during PRs.
 * Logging proposal:
   * Entry points:
     * Log all inputs (before parsing) - info level
@@ -315,3 +332,8 @@
   * Domain core decisions:
     * Log any decision made in the domain core. No need to log when you have basic CRUD logic, but do log when you have a more complex business logic. Log parameters that went into making the decision - info level.
     * Log exceptions - error level
+
+#### Correlated tracing
+
+* Allows operations to patch together logs from different services.
+* Write a query allowing the ops and QA teasm to find logs they need in the logging management system.
