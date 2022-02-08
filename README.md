@@ -297,3 +297,21 @@
   * Restore: bring the message back into the appropriate queue/topic.
   * Monitor: monitor the handler to make sure the message is processed after the fix.
   * Document: write down the findings in the runbook if they are not noted already.
+
+#### Logging
+
+* When logging an exception, log as much context as you can. Have the operations in mind - they will read the log entry and try to rebound from the error.
+* Logging proposal:
+  * Entry points:
+    * Log all inputs (before parsing) - info level
+    * If input data contains a lot of details, log the details separately - debug level
+    * Log return message so you know what was returned and how long it took - debug level
+  * Exit points:
+    * Outgoing message (any API call or message sent) - info level, so as to have a basic timing mechanism
+    * Optional debug details - debug level
+    * Log return message - debug level
+  * Storage:
+    * Log every time you access the database. Log SQL and parameters - debug level
+  * Domain core decisions:
+    * Log any decision made in the domain core. No need to log when you have basic CRUD logic, but do log when you have a more complex business logic. Log parameters that went into making the decision - info level.
+    * Log exceptions - error level
