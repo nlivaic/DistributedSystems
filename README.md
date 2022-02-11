@@ -11,12 +11,14 @@
   * Transport cost is zero
   * The network is homogeneous - happens when the system is designed so two different applications need to be deployed at the same time. Take care of versioning to mitigate this.
 
-## Properties of reliable systems:
+## Properties of reliable systems
+
   * Idempotence
   * Immutability
   * Location independence
   * Versioning
-  * These properties are discussed in detail below. The reason for these properties is they work around the fallacies we highlighted above (the network is reliable, toppology doesn't change and the network is homogeneous).
+  * These properties are discussed in detail below. The reason for these properties is they mitigate the fallacies we highlighted above: the network is reliable (idempotence), topology doesn't change (location independence) and the network is homogeneous (versioning).
+  * The above properties can be applied to any system, they are not meant necessarily for distributed systems. Applying these principles will bring value to any type of system.
 
 ### Idempotence
 
@@ -39,7 +41,7 @@
 
 ### Location independence
 * Location dependent identifiers like auto-incrementing Ids are an anti-pattern in distributed systems: One record cannot be moved from one database to another because the id might be taken by another record.
-* To maintain location independence you should hide or even not use auto-incrementing IDs.
+* To maintain location independence you should hide or even not use auto-incrementing IDs. Use client generated IDs.
 * Location independent identifiers:
   * Alternate Key
   * Natural Key
@@ -144,7 +146,7 @@
 ### Commutativity
 
 * It is a real possibility two messages which have been queued in a specific order might be processed out of order. Therefore it is important for our system to be able to process them out of order and yet have the desired result happen.
-* An example is first creating a new show for an act (show added event) and then renaming that act (act description changed event). This was important for Perry's search service. When the act is renamed all shows get the new name. When a new show is created the act name is embedded in the event. If these two events get processed the other way round then first all the shows belonging to the specific act get renamed and only then the new show will be created, but with the old name. He solved the problem by indexing the act name in a separate index. This way any show created can read the last indexed act name from the act index and compare to the act name in the show added event - if the indexed act name is newer, use that - if the indexed act name is older, replace with the act name from the show added event. This approaches hinges on the act index storing metadata (last modified date)
+* An example is first creating a new show for an act (show added event) and then renaming that act (act description changed event). This was important for Perry's search service. When the act is renamed all shows get the new name. When a new show is created the act name is embedded in the event. If these two events get processed the other way round then first all the shows belonging to the specific act get renamed and only then the new show will be created, but with the old name. He solved the problem by indexing the act name in a separate index. This way any show created can read the last indexed act name from the act index and compare to the act name in the show added event - if the indexed act name is newer, use that - if the indexed act name is older, replace with the act name from the show added event. This approaches hinges on the act index storing metadata (last modified date).
 * I think details on how to implement commutativity are very case-specific.
 
 ## Why use microservice architecture at all?
@@ -337,3 +339,11 @@
 
 * Allows operations to patch together logs from different services.
 * Write a query allowing the ops and QA teasm to find logs they need in the logging management system.
+
+## Complex Scenarios
+
+### Sagas
+
+### Compensating transactions
+
+### Maintaining ACID isolation property
