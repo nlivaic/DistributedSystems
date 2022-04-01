@@ -344,6 +344,14 @@
 * Allows operations to patch together logs from different services.
 * Write a query allowing the ops and QA teasm to find logs they need in the logging management system.
 
+## Application Gateway
+
+* A separate component in the distributed system architecture. The point is to have a centralized API through which the client applications can communicate with the backend distributed system. This way we simplify the client application by decoupling it from the backend architecture and relieving it from having to know about each microservice. At the same time, application gateway allows our microservice architecture to evolve freely because only the application gateway knows about the inner workings.
+* All incoming communication should go through the application gateway.
+* Application gateway should also participate in executing queries across services, this reduces the chatiness between the client application and the backend system. Client should issue one request and the gateway should communicate with all the relevant services.
+* Make sure not to put too much logic in the gateway. Think of it as a Backend-for-frontend (BFF) - each client application should have its own BFF written with only that client application in mind.
+* Other uses: SSL termination, rate limiting... 
+
 ## Complex Scenarios
 
 ### Sagas
