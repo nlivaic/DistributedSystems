@@ -26,6 +26,9 @@
 * Our system must be prepared to detect a duplicate write and ignore it.
 * We do this by generating a client-side generated id and then POSTing (and PUTing, but PUT is idempotent as it is) against that identifier. Guid is a good choice for this. This will act as an alternate key in the database.
 * In the course [Fundamentals of Distributed Systems](https://app.pluralsight.com/course-player?clipId=d4145cd4-2477-4a20-ae65-af9476ef06fc) Michael Perry also talks about not returning the Id back to the client. Not sure what that is about. An implication of this is that the client will use the client Id to query the resource and this decision then permeates the interfaces found throughout the application layers.
+* There are a few other ways to make sure duplicate messages do not cause issues:
+  * Message broker can be configured so as to detect duplicate messages. This operation usually hinges on having a `MessageId` of some sort in the message, which must be the same across two messages.
+  * Write the system's logic in a way that it is idempotent. E.g. do not have the message saying "add 10 to total amount" but rather say "total amount should be 60". This seems case specific.
 
 ### Immutability
 
@@ -187,10 +190,11 @@
 
 #### Transactional Outbox pattern
 
-* Insert into an `Outbox` table as part of your transaction. A separate process reads from the database and sends it to the remote service.
+* Insert into an `Outbox`/`IntegrationEvent` table as part of your transaction. A separate process reads from the database and sends it to the remote service.
 * Reading from the database can be done by having a dedicated process utilize transaction log tailing (reading from the transaction log through database-specific APIs). This approach is very database specific. It is most efficient of Transactional Outbox pattern approaches.
 * Another way to read the database for new events is to poll the `Outbox` table. This approach is universal because it does not depend on any database-specific APIs, but there is the question of how frequently we want to poll the database to not overtax it too much.
 * After the message is sent, the reading process marks it as such.
+* My guess is this approach should not be limited to just integration events, but command messages as well.
 
 ### Saga influences API design
 
