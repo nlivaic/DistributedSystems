@@ -195,6 +195,7 @@
 * Another way to read the database for new events is to poll the `Outbox` table. This approach is universal because it does not depend on any database-specific APIs, but there is the question of how frequently we want to poll the database to not overtax it too much.
 * After the message is sent, the reading process marks it as such.
 * My guess is this approach should not be limited to just integration events, but command messages as well.
+* Look into eventstoredb for a potential implementation?
 
 ### Saga influences API design
 
