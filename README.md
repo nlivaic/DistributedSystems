@@ -363,6 +363,17 @@
 - Make sure not to put too much logic in the gateway. Think of it as a Backend-for-frontend (BFF) - each client application should have its own BFF written with only that client application in mind.
 - Other uses: SSL termination, rate limiting...
 
+## Security
+
+* This section describes three use cases:
+  * Client application trying to access the services.
+  * One service trying to talk to another service.
+  * One service talking to one or more services through a message broker.
+* Several approaches are presented, starting with a simple one - client having a single token for all services. Then we show how the client could have a separate token for each service. We demonstrate how an API Gateway fits into the picture and it usefulness with doing token exchanges. This leads us to demoing how each services can be protected by a dedicated token.
+* We also discuss how HTTPS should be used even on private networks.
+
+### One token to rule them all
+
 ## Complex Scenarios
 
 ### Sagas
