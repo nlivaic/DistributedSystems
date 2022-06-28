@@ -361,7 +361,7 @@
 - All incoming communication should go through the application gateway.
 - Application gateway should also participate in executing queries across services, this reduces the chatiness between the client application and the backend system. Client should issue one request and the gateway should communicate with all the relevant services.
 - Make sure not to put too much logic in the gateway. Think of it as a Backend-for-frontend (BFF) - each client application should have its own BFF written with only that client application in mind.
-- Other uses: SSL termination, rate limiting...
+- Other uses: SSL termination, rate limiting, load balancing...
 
 ## Security
 
