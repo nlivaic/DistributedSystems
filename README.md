@@ -365,14 +365,69 @@
 
 ## Security
 
-* This section describes three use cases:
-  * Client application trying to access the services.
-  * One service trying to talk to another service.
-  * One service talking to one or more services through a message broker.
-* Several approaches are presented, starting with a simple one - client having a single token for all services. Then we show how the client could have a separate token for each service. We demonstrate how an API Gateway fits into the picture and it usefulness with doing token exchanges. This leads us to demoing how each services can be protected by a dedicated token.
-* We also discuss how HTTPS should be used even on private networks.
+- This section describes three use cases:
+  - Client application trying to access the services.
+  - One service trying to talk to another service.
+  - One service talking to one or more services through a message broker.
+- Several approaches are presented, starting with a simple one - client having a single token for all services. Then we show how the client could have a separate token for each service. We demonstrate how an API Gateway fits into the picture and it usefulness with doing token exchanges. This leads us to demoing how each services can be protected by a dedicated token. We will also discuss tradeoffs between the number of clients and the number of tokens.
+- We also discuss how HTTPS should be used even on private networks.
+- We will talk about how to secure communication going through a message broker.
+- Lastly we will discuss token stores.
+- Main takeaway from this section should be an awareness that there is no one-size-fits-all when it comes to security. Best and most secure approaches are not necessarily what is always needed as there is a high price to be paid with those (in terms of initial development, maintainability). It is better to ascertain what your specific situation requires in terms of security and then finding a best-fit approach.
+
+### Potential architectures
+
+- Initial security architecture ([source](https://excalidraw.com/#json=6jWYLeXlUtgR-33smsrOG,RP7FHLNfGBzQf44di0ddwQ)). One front end client having the ability to get tokens using both code and client credentials grant. One of the backend services acts as a client as well(Shopping Basket service) so it can exchange the token in order to facilitate downstream service-to-service communication. Please note how Token #1 does not request any identity-related scopes because the catalog service is not interested in the identity of the user. ![image](https://user-images.githubusercontent.com/26722936/176443199-5837e0fd-db71-4ecd-8f8d-52c53ba891a1.png)
 
 ### One token to rule them all
+
+- One frontend application (one OAuth2 client) and several services. One token allows access to all the services.
+- Client authenticates with the IdP and uses this token to talk to all services.
+- There is only one audience and it represents all the services.
+- Each of the services is configured in the same way, i.e. they are all under a blanket audience.
+- Downstream service to service communication is done by forwarding the token.
+- Token will have one set of scopes for all services.
+- Pros: simple to setup
+- Cons:
+  - It does not honor the Principle of least privilege. If we have another frontend application needing access to just one service, this application will still have to request the token with all the audiences and get access to all the services. If stolen, the attacker would have access to all the services.
+  - Since the same token is passed to downstream services as well, client will have access to services not meant to be accessed by the client directly.
+  - `sub` claim would be passed around even to services not interested in the user's identity.
+- Better approaches:
+  - 1: Separate token per service, each with a dedicated audience. If the targeted service needs `sub`, this can be done easily. We would still have one client requesting all these tokens.
+  - 2: Separate token per service, each with a dedicated audience. Separate clients, so each client can request a dedicated token. Please note we are talking about multiple clients here, but these can still be acquired by one and the same frontend application.
+
+#### Comparing one token and token-per-service approach
+
+- Having a single token for all services means if it gets stolen the attacker will have access to all the services. Another problem is it might get very big if you have many services and each of them requires some other profile information - all of these would have to be in the same token.
+- Having a separate token per service provides fine-grained permissions to the client: they will only have access to the requested services. If one of those tokens gets stolen, there will be less damage. However, there is a higher cost of ownership with two tokens.
+- To determine which approach is better, we need to take into account the whole of the system architecture, e.g. where do these token travel and what are the chances they might be intercepted? If one token is used to talk within the company networks and the other token is used to talk across public internet, maybe it would be good to have separate tokens, so if one token gets stolen we still haven't exposed the other token. However, if both tokens have similar paths, then the advantage of having separate token per service disappears.
+- Conclusion:
+  - Find a good fit.
+  - If you don't have an API Gateway, you could have one token with all the scopes and audiences - the problem here is the token might get very big, having to contain all the profile data needed for all the services, along with all the audiences and scopes needed for the client to function properly.
+  - Another approach when not having an API Gateway, is to have multiple tokens (one token per service). This way you have a smaller attack surface, but this does increase the cost of maintaining the solution. This might be more appropriate for sensitive applications.
+  - With an API Gateway you should aim to have one token (with API Gateway as audience) and appropriate scopes - this token can then be exchanged for dedicated tokens by the API Gateway (more on that below).
+
+#### Comparing one client and multiple client approach
+
+- It is important to note the difference between a client and an application here. We can have a widely used web application and another application that is used by employees (e.g. Event Catalog Manager application).
+- Another dimension here is whether each of those applications should be represented by a single OAuth2 client or should each of these applications have a dedicated client per each token.
+- Having only one client per application is a simpler approach, but having multiple clients (e.g. client per token/service) might lower the chance of the client secret getting stolen.
+- Again, to determine which approach is better, we need to take into account the whole of the system architecture. Since secrets are safe in a key vault accessed by all clients, having a single client per application is probably a better approach because the security added value is small and maintaining multiple clients would incur a price without getting much benefits.
+- Conclusion: one client per application is the best approach for most scenarios.
+
+### Lock down an API without having to know the user identity
+
+- Some services (e.g. Event Catalog) don't need to know who the user is. Nevertheless we don't want anyone to be able to talk to our API.
+- Client credentials is the best approach for this. Remember to use a token store.
+
+### Calling downstream services
+
+- Depends whether the downstream service needs the user's identity or not. If it needs the identity, then do a token exchange. This will require implementing your own custom grant in Identity Server, or using a On-Behalf-Off grant in Azure AD.
+- If the user identity is not needed, then the calling service can just do a Client Credentials grant.
+
+### Token exchange and API Gateway
+
+-
 
 ## Complex Scenarios
 
