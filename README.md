@@ -375,9 +375,9 @@
 - Lastly we will discuss token stores.
 - Main takeaway from this section should be an awareness that there is no one-size-fits-all when it comes to security. Best and most secure approaches are not necessarily what is always needed as there is a high price to be paid with those (in terms of initial development, maintainability). It is better to ascertain what your specific situation requires in terms of security and then finding a best-fit approach.
 
-### Potential architectures
+### Simplest architecture
 
-- Initial security architecture ([source](https://excalidraw.com/#json=6jWYLeXlUtgR-33smsrOG,RP7FHLNfGBzQf44di0ddwQ)). One front end client having the ability to get tokens using both code and client credentials grant. One of the backend services acts as a client as well(Shopping Basket service) so it can exchange the token in order to facilitate downstream service-to-service communication. Please note how Token #1 does not request any identity-related scopes because the catalog service is not interested in the identity of the user. ![image](https://user-images.githubusercontent.com/26722936/176443199-5837e0fd-db71-4ecd-8f8d-52c53ba891a1.png)
+- ![image](https://user-images.githubusercontent.com/26722936/176666084-9f3006ea-e65e-4fb8-8592-a793eb44e412.png) Initial security architecture. One front end client having the ability to get tokens using both code and client credentials grant. One of the backend services acts as a client as well(Shopping Basket service) so it can exchange the token in order to facilitate downstream service-to-service communication. Please note how Token #1 does not request any identity-related scopes because the catalog service is not interested in the identity of the user. ([source](https://excalidraw.com/#json=APEPsNt60qD1TEWX01uLV,_5mrkJLsKxCmP7oJkKY_tQ))
 
 ### One token to rule them all
 
@@ -425,9 +425,42 @@
 - Depends whether the downstream service needs the user's identity or not. If it needs the identity, then do a token exchange. This will require implementing your own custom grant in Identity Server, or using a On-Behalf-Off grant in Azure AD.
 - If the user identity is not needed, then the calling service can just do a Client Credentials grant.
 
-### Token exchange and API Gateway
+### API Gateway
 
--
+- A separate service passing through HTTP requests.
+- Aggregate requests so front end applications don't have to be too chatty.
+- Decouple the client from backend implementation by hiding internal service architecture.
+- Facilitate token exchange.
+- Do not put identity provider in the API Gateway. You might have new clients in the future and having the identity provider in one API Gateway will make it hard to evolve the API Gateway pattern into the Backend-For-Frontend (BFF).
+- Other benefits:
+  - Rate limiting
+  - Caching
+  - Service discovery
+  - Monitoring usage, analytics, logging
+  - Handling security (TLS termination)
+- Architectures:
+  - One gateway across all APIs. This means one gateway serves all clients as well. Potential caveat here is the single gateway might get tightly coupled with all the backend APIs and turn into a monolith. That can be mitigated by the BFF pattern.
+  - BFF supports having multiple clients by catering to a specific user experience as needed by a specific frontend client (mobile or web).
+- By having an API Gateway all the other services can live behind it, in a private network. This provides infrastructure security to the services, while API Gateway validates the token. API Gateway then passes on user information to the services.
+- Infrastructure security also means that inside the private network there is a free-for-all: any service can communicate with any other service freely, because tokens are not used inside the network.
+- The above leads us to the next question: should services ever deal with tokens or should they just believe the user information received from the API Gateway? And should we be ok with the free-for-all approach inside the network?
+- ![image](https://user-images.githubusercontent.com/26722936/176665730-b54455e0-a405-4317-b53e-4bf62ce89366.png) Common API Gateway security pattern. Authentication is done by API Gateway and services are not responsible for their own security. API Gateway passes user information through a custom header (access token included). ([source](https://excalidraw.com/#json=MlfJAHvKJL4Scm60CxwWp,K1gbLQeYOxRT9YPFG-xR5Q))
+
+#### Passing user information to a microservice
+
+- By having the API Gateway validate the token we can have all the services live in a private network, secured on an infrastructure level. However, we still need to pass in user information to interested services.
+- Ocelot allows passing user information via downstream HTTP headers (`AddHeadersToRequest`). That way we can define a custom header and pass whatever data we want. Take a look at Ocelot's claims transformation feature for more details.
+- Ocelot also passes the original access token via another custom header `HeaderAuthorization`.
+
+### HTTPS everywhere
+
+- When using an API Gateway we can move our services to a private network, thus making them private and inaccessible from outside. This does not mean we should remove encryption from our communication. There are several reasons to keep all communication running over HTTPS:
+  - Users on the network can turn malicious.
+  - System on the network can turn malicious or get compromised.
+  - Architecture might change and an internal network or system previously thought to be safe can became a liability.
+  - Regulatory compliance.
+- Best practices say we should build the necessary security mechanism in advance, thus removing uncertainty.
+- Also, when designing a system and you are in doubt, it is better to err on the side of security.
 
 ## Complex Scenarios
 
