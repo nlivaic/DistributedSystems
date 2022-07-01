@@ -444,13 +444,34 @@
 - By having an API Gateway all the other services can live behind it, in a private network. This provides infrastructure security to the services, while API Gateway validates the token. API Gateway then passes on user information to the services.
 - Infrastructure security also means that inside the private network there is a free-for-all: any service can communicate with any other service freely, because tokens are not used inside the network.
 - The above leads us to the next question: should services ever deal with tokens or should they just believe the user information received from the API Gateway? And should we be ok with the free-for-all approach inside the network?
-- ![image](https://user-images.githubusercontent.com/26722936/176665730-b54455e0-a405-4317-b53e-4bf62ce89366.png) Common API Gateway security pattern. Authentication is done by API Gateway and services are not responsible for their own security. API Gateway passes user information through a custom header (access token included). ([source](https://excalidraw.com/#json=MlfJAHvKJL4Scm60CxwWp,K1gbLQeYOxRT9YPFG-xR5Q))
+- ![image](https://user-images.githubusercontent.com/26722936/176665730-b54455e0-a405-4317-b53e-4bf62ce89366.png) Common (but insufficient) API Gateway security pattern. Authentication is done by API Gateway and services are not responsible for their own security. API Gateway passes user information through a custom header (access token included). ([source](https://excalidraw.com/#json=MlfJAHvKJL4Scm60CxwWp,K1gbLQeYOxRT9YPFG-xR5Q))
 
 #### Passing user information to a microservice
 
 - By having the API Gateway validate the token we can have all the services live in a private network, secured on an infrastructure level. However, we still need to pass in user information to interested services.
 - Ocelot allows passing user information via downstream HTTP headers (`AddHeadersToRequest`). That way we can define a custom header and pass whatever data we want. Take a look at Ocelot's claims transformation feature for more details.
 - Ocelot also passes the original access token via another custom header `HeaderAuthorization`.
+
+### Improving the API Gateway Pt. 1
+
+- Please note the architecture from this section is considered good enough for production.
+- The way API Gateway is created (above) means two things:
+  - Gateway does token validation. User information is passed downstream through a custom header.
+  - Inside the private network there is no additional security. Any client with a valid token can call anything inside the network. Besides granting too much accessibility, this approach also makes adding new clients awkward - every new client will have access to everything.
+- Solution:
+  - Each service should check for respective audience.
+  - Gateway should check if the token is meant for itself and allow/disallow downstream access based on scope. API Gateway (Ocelot in our case) would use the scopes to restrict or allow access to specific routes. API Gateway must forward the token then, as bearer token (ditch the custom token and user id header).
+  - Access token should contain audiences for each of the internal services (plus gateway itself), based on the needs of the client. Along with the audiences appropriate scopes should also be requested by the client. Adding a new client would mean allowing only needed services/audiences, per requirements.
+- ![image](https://user-images.githubusercontent.com/26722936/176877331-11bcaeb2-a3b5-4b80-933c-ce6ac73cc73d.png) Improved API Gateway security pattern. Authentication is done by API Gateway, routing is done based on scopes, token gets forwarded to each service with the services now being responsible for checking the audience of the token. ([source](https://excalidraw.com/#json=rleXldbTsZsB2pnoypCn1,Ab6wje7RCq-cH7ZfLxNxvw))
+
+### Improving the API Gateway Pt. 2
+
+- Situation in the previous section is now production ready. For most scenarios this would be enough. However there are some downsides to it as well.
+  - Token is very permissive. In a more secure scenario we might want to go with a small, less permissive token.
+  - Implementation details are exposed - such a token is a good description of the internal services architecture.
+- We can make the token less permissive by having only the gateway audience in there. Tokens needed by each of the services would then be retrieved by the gateway using token exchange. This approach would also stop leaking the internal details. Since there is only the gateway audience, we would have to abandon the scope-based routing approach
+- To find out how to do this with Ocelot, look into `DelegatingHandler`. Make sure you exchange the access token for a new token that has only one audience, the one you are communicating with. Also make sure you store the token in a token store.
+- ![image](https://user-images.githubusercontent.com/26722936/176876367-dfd8a8b5-318f-4267-bb2a-f148307de54c.png) Most secure API Gateway security pattern. Authentication is done by API Gateway, token gets exchanged for service-specific token. New token gets sent as bearer token to each service. ([source](https://excalidraw.com/#json=j25EgQQarHGfvZbpqmDCA,Q4oj9j5Sb64XxRcYDuc9kw))
 
 ### HTTPS everywhere
 
