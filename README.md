@@ -452,7 +452,7 @@
 - Ocelot allows passing user information via downstream HTTP headers (`AddHeadersToRequest`). That way we can define a custom header and pass whatever data we want. Take a look at Ocelot's claims transformation feature for more details.
 - Ocelot also passes the original access token via another custom header `HeaderAuthorization`.
 
-### Improving the API Gateway Pt. 1
+### Improving the API Gateway Pt. 1 - scope-based routing, one token
 
 - Please note the architecture from this section is considered good enough for production.
 - The way API Gateway is created (above) means two things:
@@ -464,14 +464,28 @@
   - Access token should contain audiences for each of the internal services (plus gateway itself), based on the needs of the client. Along with the audiences appropriate scopes should also be requested by the client. Adding a new client would mean allowing only needed services/audiences, per requirements.
 - ![image](https://user-images.githubusercontent.com/26722936/176877331-11bcaeb2-a3b5-4b80-933c-ce6ac73cc73d.png) Improved API Gateway security pattern. Authentication is done by API Gateway, routing is done based on scopes, token gets forwarded to each service with the services now being responsible for checking the audience of the token. ([source](https://excalidraw.com/#json=rleXldbTsZsB2pnoypCn1,Ab6wje7RCq-cH7ZfLxNxvw))
 
-### Improving the API Gateway Pt. 2
+### Improving the API Gateway Pt. 2 - token exchange
 
 - Situation in the previous section is now production ready. For most scenarios this would be enough. However there are some downsides to it as well.
   - Token is very permissive. In a more secure scenario we might want to go with a small, less permissive token.
   - Implementation details are exposed - such a token is a good description of the internal services architecture.
 - We can make the token less permissive by having only the gateway audience in there. Tokens needed by each of the services would then be retrieved by the gateway using token exchange. This approach would also stop leaking the internal details. Since there is only the gateway audience, we would have to abandon the scope-based routing approach
-- To find out how to do this with Ocelot, look into `DelegatingHandler`. Make sure you exchange the access token for a new token that has only one audience, the one you are communicating with. Also make sure you store the token in a token store.
+- To find out how to do this with Ocelot, look into `DelegatingHandler`. Make sure you exchange the access token for a new token that has only one audience, the one you are communicating with. Also make sure you store the token in a token store. More [here](https://github.com/nlivaic/SecuringMicroservicesAspNetCore/blob/main/WithGateway/Finished%20sample/GloboTicket.Gateway/DelegatingHandlers/TokenExchangeDelegatingHandler.cs#L68)
 - ![image](https://user-images.githubusercontent.com/26722936/176876367-dfd8a8b5-318f-4267-bb2a-f148307de54c.png) Most secure API Gateway security pattern. Authentication is done by API Gateway, token gets exchanged for service-specific token. New token gets sent as bearer token to each service. ([source](https://excalidraw.com/#json=j25EgQQarHGfvZbpqmDCA,Q4oj9j5Sb64XxRcYDuc9kw))
+
+### Token stores and refreshing token
+
+- User-initiated flows (authentication code flow): use `IdentityModel.AspNetCore` library, which implements automatic token refresh and token store. Integrate it into your services by calling `.AddAccessTokenManagement()`. What it does is store access and refresh tokens in the cookie and makes sure the access token is refreshed accordingly. You make it work with `HttpClient` by calling `.AddUserAccessTokenHandler()` when you configure `HttpClient` in `ConfigureServices()`. More [here](https://github.com/nlivaic/SecuringMicroservicesAspNetCore/blob/main/WithGateway/Finished%20sample/GloboTicket.Client/Startup.cs#L41).
+- Flows not initiated by the user (client credentials, token exchange): still use `IdentityModel.AspNetCore` library, but you will have to move things into and out of provided cache yourself (inject `IClientAccessTokenCache`) - make sure you have a good name for cache key. Everything is still integrated using `.AddAccessTokenManagement()`. `IClientAccessTokenCache.GetAsync()` returns the access token only if it is not expired. You will also have to check yourself if the access token is expired and execute the client credentials or exchange token flow - . Remember, this must be done on the gateway (if using exchange token flow) and all clients using client credentials. More details [here](https://github.com/nlivaic/SecuringMicroservicesAspNetCore/blob/main/WithGateway/Finished%20sample/GloboTicket.Gateway/DelegatingHandlers/TokenExchangeDelegatingHandler.cs).
+
+### Securing asynchronous communication
+
+- In this section we are talking about Service Bus, but the same approach should be transferrable to other messaging brokers as well.
+- Basic security is for each publisher and consumer to have a Shared Access Signature (SAS) with adequate read/write permissions. However, this still allows any application in the system to access the broker if it has the SAS.
+- Additional layer of security is for each publisher to send an appropriate access token for the targeted service. Of course, this would only work for the queues and not the publish-subscribe mechanisms as those rely on the publisher not knowing who the consumers are.
+- Tokens would be sent along with the message (example [here](https://github.com/nlivaic/SecuringMicroservicesAspNetCore/blob/main/WithGateway/Finished%20sample/GloboTicket.Integration.Messages/IntegrationBaseMessage.cs)).
+- Consumer would have to be able to read and validate the token. Important thing to note here is the message might be read some time after getting enqueued, so the access token might be expired by then. A solution to this approach is to either a) not validate the expiration date or b) to determine whether the token was valid when the message was published. Approach b) can be seen [here](https://github.com/nlivaic/SecuringMicroservicesAspNetCore/blob/main/WithGateway/Finished%20sample/GloboTicket.Services.Order/Helpers/TokenValidationService.cs).
+  - One open point here: `TokenValidationService` is called every time a message is read off the queue. As part of the validation, the well-known document is fetched, which does not sound very efficient.
 
 ### HTTPS everywhere
 
