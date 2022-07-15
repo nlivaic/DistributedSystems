@@ -497,6 +497,63 @@
 - Best practices say we should build the necessary security mechanism in advance, thus removing uncertainty.
 - Also, when designing a system and you are in doubt, it is better to err on the side of security.
 
+## Versioning
+
+### Overview
+
+- Some updates to the API are breaking, and some are non-breaking:
+  - Breaking changes:
+    - Renaming a property
+    - Changing the type of a property
+  - Non-breaking changes:
+    - Additive changes: adding a new property to a message. Previous versions of API will still be able to read/deserialize such messages.
+- Indicating which version we want:
+  - Header
+  - Route
+  - Query string
+  - Custom Content type, e.g. `application/vnd+v2+json`
+- Rolling updates
+  - First deploy the new microservice, then deploy the new client talking to the new version of the API.
+
+### `Microsoft.AspNetCore.Versioning`
+
+- `Microsoft.AspNetCore.Versioning` library is meant for handling versioning.
+- Register service by calling `.AddApiVersioning()`. It is a smart move to configure the library so requests default to V1 by providing a delegate saying `o.AssumeDefaultVersionWhenUnspecified = true`.
+- You can configure things further here: routing via querystring/route/custom header; have the server return available API versions in a header; which API version is the default one (to be used when no version is specified by the client).
+- Mark your controller with `ApiVersion("2.0")`, or you can pick specific action methods with `MapToApiVersion("2.0")`. I guess unmarked action methods default to V1.
+- By default it works by having the client append `?api-version=2.0`, but this can be configured differently.
+- Naming:
+- Move V2 endpoints to a separate controller.
+- Add `.V2` to the namespace, this way you don't have to suffix DTOs and controllers.
+- This means we have to put controllers and DTOs into separate `V2` folders, due to filenames clashing.
+
+### Retiring old versions
+
+- If you do not plan on supporting old clients indefinitely, then you should have a policy for retiring them.
+- Clients should be coached on how to upgrade.
+- Forcing third party clients to update is harder, so you might be stuck with those.
+
+### Swagger documentation and multiple versions
+
+- Refer [here](https://github.com/dotnet/aspnet-api-versioning/tree/ms/samples/aspnetcore/SwaggerSample) for an example. The text below is just a reminder of what to look out for, but refer to the source code in the linked example.
+- NuGet package is added: `Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer`.
+- A new `IOperationFilter` class is created. This is needed only because of certain bugs in Swagger, so this might not be needed by now.
+- A new `IConfigureOptions<SwaggerGenOptions>` class is created. This allows to specify some metadata for each of the versions.
+- Configure services in `Startup.cs`: `.AddVersionedApiExplorer()`, register `IConfigureOptions` as transient and `.AddSwaggerGen()` with the new `OperationFilter`.
+- In `Startup`'s `Configure` method we must inject `IApiVersionDescriptionProvider`. In `.UseSwaggerUI()` we loop through `provider.ApiVersionDescriptions` and configure an endpoint for each version.
+
+### Asynchronous messaging
+
+- This section describes how to version commands and events.
+- Additive changes are not breaking changes.
+- Renaming a property or changing the type of property will cause breaking changes.
+- A new version of the message must be introduced then. Message metadata can include a message version. Recipient/consumer must either respect the version or use a default version to be able to deserialize to correct type.
+- You will have to support consuming both old and new version, if you have introduced a breaking change. When we introduce a new version of a message, this means that two versions will coexist for a while in the queue. The consumer must be able to read both versions, at least until all the older versions have been read off of the queue. At one point we can tell the producer to stop creating older version of the message and remove the legacy consumer as well. Since this is a complex process, it is better to refrain from introducing breaking changes if at all possible.
+- It is best to do an additive change. If there are properties you don't use anymore, just mark them as `[Obsolete]`. Once all the queues are clear of the original messages, you can remove the obsolete property and upgrade the consumers. Perhaps even create a task in your task management tool to remind you to remove the obsolete property after a while.
+- Another approach is to create a new message, dubbed `V2`. We also need a new `V2` consumer to go along with it, able to read the `V2` message.
+- As far as queues go, you can publish the `V1` and `V2` to the same queue, but you could also create a new, dedicated queue just for `V2`.
+- Backwards compatibility is best confirmed with integration tests.
+
 ## Complex Scenarios
 
 ### Sagas
